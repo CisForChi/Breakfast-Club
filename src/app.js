@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ajax } from 'jquery';
+import { Router, Route, browserHistory} from 'react-router';
 import Header from './components/Header';
 import RecipeCard from './components/recipeCard.js'
 
@@ -14,7 +15,12 @@ const config = {
 
   firebase.initializeApp(config)
 
-  
+ 
+ const Contact = () => {
+ 	return (
+ 	<div>Contact</div>
+ 		)
+	}
 
 class App extends React.Component {
 		constructor(){
@@ -22,8 +28,9 @@ class App extends React.Component {
 		this.state = {
 			mood: ["energy", "cleanse", "wildCard", "starving"],
 			userChoice: [],
-			recipes:[]
-		}
+			recipes:[],
+			loggedin: false
+		};
 		//binding elements
 		this.showSidebar= this.showSidebar.bind(this);
 		this.addRecipe = this.addRecipe.bind(this);
@@ -37,21 +44,30 @@ class App extends React.Component {
 	//recipe submission 
 	//
 	componentDidMount() {
-		firebase.database().ref().on('value', (res) => {
-			
-			const userData = res.val();
-			const dataArray = [];
-			for(let objKey in userData) {
-				userData[objKey].key = objKey;
-				dataArray.push(userData[objKey])
-
+		firebase.auth().onAuthStateChanged((users) => {
+			if(user){
+				firebase.database().ref(`users/${user.uid}/recipes`).on('value', (res) => {
+				const userData = res.val();
+				const dataArray = [];
+				for(let objKey in userData) {
+					userData[objKey].key = objKey;
+					dataArray.push(userData[objKey])
 			 }
 			 this.setState({
-			 	recipes: dataArray
-			 })
-		});
-			
-	}
+			 	recipes: dataArray,
+			 	loggedin: true
+			 	})
+			});
+		}
+		else {
+			this.setState({
+				loggedin: false
+
+			});
+
+		}
+	})	
+}
 	showSidebar(e){
 		e.preventDefault();
 		this.sidebar.classList.add("show");
@@ -60,20 +76,24 @@ class App extends React.Component {
 		e.preventDefault();
 		const recipe = {
 			title: this.recipeTitle.value,
-			text: this.recipeText.value
+			text: this.recipeText.value,
+			ingredients:this.recipeIngredients.value
 		};
-	const dbRef = firebase.database().ref();
+	const userId= firebase.auth().currentUser.uid
+	const dbRef = firebase.database().ref(`users/${userId}/recipes `);
 
 	dbRef.push(recipe);	
 	
 		
 		this.recipeTitle.value = "";
 		this.recipeText.value = "";
+		this.recipeIngredients.value="";
 		this.showSidebar(e);
 	}
 
 	removeRecipe(recipeId){
-		const dbRef= firebase.database().ref(recipeId);
+		const userId = firebase.auth().currentUser.uid;
+		const dbRef= firebase.database().ref(`users/${user.uid}/recipes/${recipeId}`);
 		dbRef.remove();
 
 	}
@@ -129,11 +149,28 @@ alert(err.message)
 	 	.catch((err) => {
 	 		alert(err.message)
 	 });
-
-
-
-	 }
+ }
+ logOut(){
+ 	firebase.auth().signOut;
+ }
+ renderRecipes() {
+ 	if(this.state.loggedin){
+ 		return this.state.recipes.map((recipe, i) => {
+				return (
+					<RecipeCard recipe={recipe} key={`recipe-${i}`} removeRecipe={this.removeRecipe} />
+					)
+			}).reverse()
+		}
+		else {
+			return <h2>Please login to add a recipe. 🍽 </h2>
+		}
+ 	}
 //part of ajax call, assigning objects
+Const About = () => {
+ 	
+ 	<div>About</div>
+ 		
+ 	 }
 	getRecipes(mood){
 		const moodToIngredients = {	
 			energy: "oatmeal+chia+banana+hemp+peanutbutter",
@@ -160,72 +197,43 @@ alert(err.message)
 			console.log(data);
 		});
 		}
+
 	render() {
 	return(
 		<div>
-		<Header tagline="Breakfast 🍽 Club" loadRecipes={this.loadRecipes} />
-				<nav>
-						<a href="#">Menu</a>
-						<a href="#" onClick={this.showSidebar}>Submit a Recipe</a>
-
+		<nav className="head-nav">
+		{
+			(() => {
+				if(this.state.loggedin){
+					return(
+						<span>
+					<a href="#" onClick={this.showSidebar}>Submit a Recipe</a>
+					<a href="#" onClick={this.logOut}>Logout</a>
+					
+	
+		
+					</span>
+					)
+				}
+				else{
+					return(
+						<span>
 						<a href="" onClick={this.showCreate}>Create Account</a>
 						<a href="#" onClick={this.showLogin}>Login</a>
-
-						<a href="#">Recipes></a>
-
-					</nav>
-					<h2>I woke up like..</h2>
+						</span>
+					)
+				}
+			})()
+		}
+						
+		</nav>
+		<Header tagline="Breakfast 🍽 Club" loadRecipes={this.loadRecipes} />
+				<h2>I woke up like..</h2>
 					<p>I want inspiration</p>
 					<button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button>
 					<button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button>
 					<button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button>
 					<button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button>
-					
-						
-					<div className="overlay" ref={ref => this.overlay =ref}></div>
-		<section className="recipes">
-			{this.state.recipes.map((recipe, i) => {
-				return (
-					<RecipeCard recipe={recipe} key={`recipe-${i}`} removeRecipe={this.removeRecipe} />
-					)
-			})}
-		</section>
-		<div>
-
-
-
-		<aside className="sidebar" ref={ref => this.sidebar = ref}>
-			<form onSubmit={this.addRecipe}>
-			<h3>Add New Recipe</h3>
-			<div className="close-btn" onClick={this.showSidebar}>
-				<i className="fa fa-times"></i>
-			</div>
-			<label htmlFor="recipe-title">Title:</label>
-			<input type="text" name="recipe-title" ref={ref => this.recipeTitle = ref}/>
-			<label htmlFor="recipe-text">Text:</label>
-			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
-			<input type="submit" value="Add New Recipe"/>
-			</form>
-		</aside>
-
-		<div className="loginModal modal" ref={ref => this.loginModal = ref}>
-			<div className="close" onClick={this.showLogin}>
-				<i className="fa fa-times"></i>
-			</div>
-			<form action="" onSubmit={this.loginUser}>
-					<div>
-						<label htmlFor="email">Email:</label>
-						<input type="text" name="email" ref={ref =>this.userEmail = ref}/>
-					</div>
-					<div>
-						<label htmlFor="password">Password:</label>
-						<input type="password" name="password" ref={ref => this.userPassword = ref}/>
-					</div>
-					<div>
-						<input type="submit" value="Login"/>
-					</div>
-				</form>
-			</div>
 
 		<div className="createUserModal modal" ref={ref => this.createUserModal = ref}>
 			<div className="close">
@@ -250,10 +258,88 @@ alert(err.message)
 				</form>
 
 </div>
+					
+					
+						
+					<div className="overlay" ref={ref => this.overlay =ref}></div>
+		<section className="recipes">
+			{this.renderRecipes}
+		</section>
+		<div>
+
+
+
+		<aside className="sidebar" ref={ref => this.sidebar = ref}>
+			<form onSubmit={this.addRecipe}>
+			<h3>Add New Recipe</h3>
+			<div className="close-btn" onClick={this.showSidebar}>
+				<i className="fa fa-times"></i>
+			</div>
+			<label htmlFor="recipe-title">Name It:</label>
+			<input type="text" name="recipe-title" ref={ref => this.recipeTitle = ref}/>
+			<label htmlFor="recipe-text">What's in it?:</label>
+			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
+			
+			<label htmlFor="recipe-ingredients">Photo?:</label>
+			<textarea name="recipe-ingrdients" ref={ref => this.recipeIngredients = ref}></textarea>
+			<input type="submit" value="Add New Recipe"/>
+			</form>
+		</aside>
+		
+
+		<div className="loginModal modal" ref={ref => this.loginModal = ref}>
+			<div className="close" onClick={this.showLogin}>
+				<i className="fa fa-times"></i>
+			</div>
+			<form action="" onSubmit={this.loginUser}>
+					<div>
+						<label htmlFor="email">Email:</label>
+						<input type="text" name="email" ref={ref =>this.userEmail = ref}/>
+					</div>
+					<div>
+						<label htmlFor="password">Password:</label>
+						<input type="password" name="password" ref={ref => this.userPassword = ref}/>
+					</div>
+					<div>
+						<input type="submit" value="Login"/>
+					</div>
+				</form>
+
+			</div>
+
 		</div>
 		
 		</div>
 		)
+	
 	}
+
+
 }
-ReactDOM.render(<App />, document.getElementById('app'));
+
+
+
+ReactDOM.render(
+	<Router history={browserHistory}>
+    <Route path="/" component={App} />
+      <Route path="/about" component={About} />
+  </Router>, document.getElementById('app'));
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

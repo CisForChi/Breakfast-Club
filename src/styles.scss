@@ -5,93 +5,30 @@ input[type=reset],input[type=submit]{-webkit-appearance:button;cursor:pointer;}b
 
 * { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
 
-h1 {
-
-
-	font-family: 'Homemade Apple', cursive;
-
-
-}
-
-
 
 body {
 	margin:0 auto;
-	
+	padding:25px;
 	border:1px solid black;
 	text-align:center;
-	background: #FFFAFA;
-
-
-
 	font-family: 'Montserrat', sans-serif;
 	letter-spacing:1px;
-	overflow-x:hidden;
 
 	
 
 
 }
-.head-nav {
-	display:inline-flex;
-	justify-content:flex-start;
-
-	border:1px solid lightcyan;
-	background:#F5F5F5;
-	padding:15px;
-	margin:0 auto;
-	width:100%;
-	font-size:.5rem;
-
+nav {
+	display:flex;
+	flex-direction: column;
 }
 a {
-	color:black;
-	padding:5px;
-	margin:5px;
-	text-decoration-color: darkcyan;
-
+	color:pink;
+	text-decoration:none;
 }
+
 button {
-	color:black;
-	border:1px solid black;
-	padding:5px 10px;
-	background:#FFEFD5;
-
-	
-}
-/*..sidebar {
-	width: 250px;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: -250px;
-	background: #7fb5d7;
-	transition: all 0.5s ease;
-	padding: 0 15px;
-}
-
-.sidebar.show {
-	left: 0;
-}
-
-.sidebar input,
-.sidebar textarea {
-	width: 100%;
-	margin-bottom: 25px;
-	background: transparent;
-	border: none;
-	border-bottom: 2px solid #517288;
-}
-
-.sidebar input[type=submit] {
-	border: 2px solid #517288;
-	color: #2f424e;
-}
-
-.fa-times {
-	position: absolute;
-	top: 5px;
-	right: 5px;
+	color:blue;
 }
 
 img {
@@ -102,106 +39,22 @@ img {
 }
 .recipe-ingredients {
 	display:flex;
-	justify-content:flex-start;
 	flex-direction:column;
-	
+	justify-content:center;
 	margin:2px;
 	padding:2px;
 
 }
 
-.recipes {
-	padding: 0 50px;
-	display: flex;
-	flex-wrap: wrap;
-}
+aside {
+	display:flex;
+	justify-content:center;
 
-.recipeCard {
-	flex: 1 0 200px;
-	background: white;
-	box-shadow: 3px 2px 3px rgba(0,0,0,0.1);
-	margin: 15px;
-	padding: 10px;
-	position: relative;
-}
-
-.recipeCard h4 {
-	margin-top: 0;
-	position: relative;
-}
-
-.recipeCard h4:after {
-	width: 20px;
-	height: 2px;
-	background: #182020;
-	display: block;
-	position: absolute;
-	bottom: -10px;
-	left: 0;
-	content: "";
-}
-
-.recipeCard input,
-.recipeCard textarea {
-	border: none;
-	border-bottom: 2px solid #182020;
-	margin-bottom: 10px;
-	width: 100%;
-}
-
-.recipeCard input[type=submit] {
-	width: auto;
-	border: 2px solid #182020;
-	color: #182020;
-	background: transparent;
 }
 form {
-	border:1px solid #F5F5F5;
-
-	background: #F5F5F5;
-	display: inline-flex;
-	justify-content:center;
-	flex-direction:column;
-	width:100%;
-	padding:25px;
+	border:1px solid red;
 }
-.overlay {
-	top: 0;
-	left: 0;
-	height: 100%;
-	width: 100%;
-	background: rgba(0,0,0,0.4);
-}
-.modal,
-.overlay {
-	visibility: hidden;
-	opacity: 0;
-	transition: all 0.3s ease;
-	position: absolute;
-}
-.modal.show,
-.overlay.show {
-	visibility: visible;
-	opacity: 1;
-}
-.modal {
-	width: 400px;
-	background: white;
-	border: 10px solid rgba(255,255,255,0.5);
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%,-50%);
-}
-
-.modal div {
-	margin: 15px;
-	display: flex;
-}
-.modal label {
-	margin-right: 10px;
-}
-
 
 .sidebar {
 	border:1px solid black;
-}*/
+}

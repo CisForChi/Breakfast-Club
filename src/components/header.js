@@ -24,12 +24,7 @@ export default class Header extends React.Component {
 					
 						</header>
 						
-					<div>
-)
 				
-
-				 	
-					</div>
 					
 			</div>
 			)

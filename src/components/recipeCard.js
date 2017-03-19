@@ -13,10 +13,12 @@ constructor() {
 
 save(e) {
 e.preventDefault();
-const dbRef = firebase.database().ref(this.props.recipe.key);
+const userId = firebase.auth().currentUser.uid;
+const dbRef = firebase.database().ref(`users/${user.uid}/recipes/${this.props.recipe.key}`);
 dbRef.update({
 	title:this.recipeTitle.value,
-	text: this.recipeText.value
+	text: this.recipeText.value,
+	ingredients: this.recipeIngredients.value
 });
 this.setState({
 editing: false
@@ -30,6 +32,7 @@ render() {
 		<span>
 			<h4>{this.props.recipe.title}</h4>
 			<p>{this.props.recipe.text}</p>
+			<p>{this.props.recipe.ingredients}</p>
 		</span>
 )
 	if(this.state.editing) {
@@ -40,6 +43,9 @@ render() {
 				</div>
 				<div>
 				<input type="text" defaultValue={this.props.recipe.text} name="text" ref={ref => this.recipeText = ref }/>
+				</div>
+				<div>
+				<input type="text" defaultValue={this.props.recipe.ingredients} name="ingredients" ref={ref => this.recipeIngredients = ref }/>
 				</div>
 				<input type="submit" value="Done editing"/>
 			</form>
