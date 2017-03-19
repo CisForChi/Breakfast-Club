@@ -30727,17 +30727,9 @@ var _Header = require('./components/Header');
 
 var _Header2 = _interopRequireDefault(_Header);
 
-var _Recipes = require('./components/Recipes');
+var _recipeCard = require('./components/recipeCard.js');
 
-var _Recipes2 = _interopRequireDefault(_Recipes);
-
-var _Moods = require('./components/Moods');
-
-var _Moods2 = _interopRequireDefault(_Moods);
-
-var _Footer = require('./components/Footer');
-
-var _Footer2 = _interopRequireDefault(_Footer);
+var _recipeCard2 = _interopRequireDefault(_recipeCard);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -30746,6 +30738,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var config = {
+	apiKey: "AIzaSyBfjT7C3FsJraXTdt0OuhL3dVZJIgPq-UA",
+	authDomain: "breakfastclub-d1c63.firebaseapp.com",
+	databaseURL: "https://breakfastclub-d1c63.firebaseio.com",
+	storageBucket: "breakfastclub-d1c63.appspot.com",
+	messagingSenderId: "736393212744"
+};
+
+firebase.initializeApp(config);
 
 var App = function (_React$Component) {
 	_inherits(App, _React$Component);
@@ -30756,23 +30758,382 @@ var App = function (_React$Component) {
 		var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
 
 		_this.state = {
-			recipe: []
-
+			mood: ["energy", "cleanse", "wildCard", "starving"],
+			userChoice: [],
+			recipes: []
 		};
+		//binding elements
+		_this.showSidebar = _this.showSidebar.bind(_this);
+		_this.addRecipe = _this.addRecipe.bind(_this);
+		_this.getRecipes = _this.getRecipes.bind(_this);
+		_this.showCreate = _this.showCreate.bind(_this);
+		_this.createUser = _this.createUser.bind(_this);
+		_this.showLogin = _this.showLogin.bind(_this);
+		_this.loginUser = _this.loginUser.bind(_this);
 
 		return _this;
 	}
+	//recipe submission 
+	//
+
 
 	_createClass(App, [{
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			var _this2 = this;
+
+			firebase.database().ref().on('value', function (res) {
+
+				var userData = res.val();
+				var dataArray = [];
+				for (var objKey in userData) {
+					userData[objKey].key = objKey;
+					dataArray.push(userData[objKey]);
+				}
+				_this2.setState({
+					recipes: dataArray
+				});
+			});
+		}
+	}, {
+		key: 'showSidebar',
+		value: function showSidebar(e) {
+			e.preventDefault();
+			this.sidebar.classList.add("show");
+		}
+	}, {
+		key: 'addRecipe',
+		value: function addRecipe(e) {
+			e.preventDefault();
+			var recipe = {
+				title: this.recipeTitle.value,
+				text: this.recipeText.value
+			};
+			var dbRef = firebase.database().ref();
+
+			dbRef.push(recipe);
+
+			this.recipeTitle.value = "";
+			this.recipeText.value = "";
+			this.showSidebar(e);
+		}
+	}, {
+		key: 'removeRecipe',
+		value: function removeRecipe(recipeId) {
+			var dbRef = firebase.database().ref(recipeId);
+			dbRef.remove();
+		}
+	}, {
+		key: 'showCreate',
+		value: function showCreate(e) {
+			e.preventDefault();
+			this.overlay.classList.toggle('show');
+			this.createUserModal.classList.toggle('show');
+		}
+	}, {
+		key: 'createUser',
+		value: function createUser(e) {
+			var _this3 = this;
+
+			e.preventDefault();
+			//check if passwords match
+			//then create user
+			//
+			var email = this.createEmail.value;
+			var password = this.createPassword.value;
+			var confirm = this.confirmPassword.value;
+			if (password === confirm) {
+				firebase.auth().createUserWithEmailAndPassword(email, password).then(function (res) {
+					_this3.showCreate(e);
+				}).catch(function (err) {
+					alert(err.message);
+				});
+			} else {
+				alert({
+					title: "Sweet!",
+					text: "Here's a custom image.",
+					imageUrl: "images/thumbs-up.jpg"
+				});
+			}
+		}
+	}, {
+		key: 'showLogin',
+		value: function showLogin(e) {
+			e.preventDefault();
+			this.overlay.classList.toggle('show');
+			this.loginModal.classList.toggle('show');
+		}
+	}, {
+		key: 'loginUser',
+		value: function loginUser(e) {
+			var _this4 = this;
+
+			e.preventDefault();
+			var email = this.userEmail.value;
+			var password = this.userPassword.value;
+
+			firebase.auth().signInWithEmailAndPassword(email, password).then(function (res) {
+				_this4.showLogin(e);
+			}).catch(function (err) {
+				alert(err.message);
+			});
+		}
+		//part of ajax call, assigning objects
+
+	}, {
+		key: 'getRecipes',
+		value: function getRecipes(mood) {
+			var moodToIngredients = {
+				energy: "oatmeal+chia+banana+hemp+peanutbutter",
+				cleanse: "oatmeal+coconut+chia+detox+avocado+spirulina+ginger+raw+maca",
+				wildCard: "chia+buckwheat+pancakes+breakfast%bowl+breakfast",
+				starving: "buckwheat+oatmeal+grains"
+			};
+			var userChoice = moodToIngredients[mood];
+			(0, _jquery.ajax)({
+				url: 'http://api.yummly.com/v1/api/recipes',
+				type: 'GET',
+				dataType: 'jsonp',
+				data: {
+					_app_id: 'f4d2ebd2',
+					_app_key: 'e61d860e9e43d60dbc496c726945c64b',
+					q: userChoice,
+					requirePictures: true,
+					maxResult: 20,
+					allowedDiet: ['386^Vegan']
+				}
+			}).then(function (data) {
+				console.log(data);
+			});
+		}
+	}, {
 		key: 'render',
 		value: function render() {
+			var _this5 = this;
+
 			return _react2.default.createElement(
 				'div',
 				null,
-				_react2.default.createElement(_Header2.default, { tagline: 'Breakfast \uD83C\uDF7D Club' }),
-				_react2.default.createElement(_Moods2.default, null),
-				_react2.default.createElement(_Recipes2.default, { recipes: this.state.recipe }),
-				_react2.default.createElement(_Footer2.default, null)
+				_react2.default.createElement(_Header2.default, { tagline: 'Breakfast \uD83C\uDF7D Club', loadRecipes: this.loadRecipes }),
+				_react2.default.createElement(
+					'nav',
+					null,
+					_react2.default.createElement(
+						'a',
+						{ href: '#' },
+						'Menu'
+					),
+					_react2.default.createElement(
+						'a',
+						{ href: '#', onClick: this.showSidebar },
+						'Submit a Recipe'
+					),
+					_react2.default.createElement(
+						'a',
+						{ href: '', onClick: this.showCreate },
+						'Create Account'
+					),
+					_react2.default.createElement(
+						'a',
+						{ href: '#', onClick: this.showLogin },
+						'Login'
+					),
+					_react2.default.createElement(
+						'a',
+						{ href: '#' },
+						'Recipes>'
+					)
+				),
+				_react2.default.createElement(
+					'h2',
+					null,
+					'I woke up like..'
+				),
+				_react2.default.createElement(
+					'p',
+					null,
+					'I want inspiration'
+				),
+				_react2.default.createElement(
+					'button',
+					{ onClick: function onClick() {
+							return _this5.getRecipes("energy");
+						} },
+					this.state.mood[0],
+					' '
+				),
+				_react2.default.createElement(
+					'button',
+					{ onClick: function onClick() {
+							return _this5.getRecipes("cleanse");
+						} },
+					this.state.mood[1]
+				),
+				_react2.default.createElement(
+					'button',
+					{ onClick: function onClick() {
+							return _this5.getRecipes("wildCard");
+						} },
+					this.state.mood[2]
+				),
+				_react2.default.createElement(
+					'button',
+					{ onClick: function onClick() {
+							return _this5.getRecipes("starving");
+						} },
+					this.state.mood[3]
+				),
+				_react2.default.createElement('div', { className: 'overlay', ref: function ref(_ref) {
+						return _this5.overlay = _ref;
+					} }),
+				_react2.default.createElement(
+					'section',
+					{ className: 'recipes' },
+					this.state.recipes.map(function (recipe, i) {
+						return _react2.default.createElement(_recipeCard2.default, { recipe: recipe, key: 'recipe-' + i, removeRecipe: _this5.removeRecipe });
+					})
+				),
+				_react2.default.createElement(
+					'div',
+					null,
+					_react2.default.createElement(
+						'aside',
+						{ className: 'sidebar', ref: function ref(_ref4) {
+								return _this5.sidebar = _ref4;
+							} },
+						_react2.default.createElement(
+							'form',
+							{ onSubmit: this.addRecipe },
+							_react2.default.createElement(
+								'h3',
+								null,
+								'Add New Recipe'
+							),
+							_react2.default.createElement(
+								'div',
+								{ className: 'close-btn', onClick: this.showSidebar },
+								_react2.default.createElement('i', { className: 'fa fa-times' })
+							),
+							_react2.default.createElement(
+								'label',
+								{ htmlFor: 'recipe-title' },
+								'Title:'
+							),
+							_react2.default.createElement('input', { type: 'text', name: 'recipe-title', ref: function ref(_ref2) {
+									return _this5.recipeTitle = _ref2;
+								} }),
+							_react2.default.createElement(
+								'label',
+								{ htmlFor: 'recipe-text' },
+								'Text:'
+							),
+							_react2.default.createElement('textarea', { name: 'recipe-text', ref: function ref(_ref3) {
+									return _this5.recipeText = _ref3;
+								} }),
+							_react2.default.createElement('input', { type: 'submit', value: 'Add New Recipe' })
+						)
+					),
+					_react2.default.createElement(
+						'div',
+						{ className: 'loginModal modal', ref: function ref(_ref7) {
+								return _this5.loginModal = _ref7;
+							} },
+						_react2.default.createElement(
+							'div',
+							{ className: 'close', onClick: this.showLogin },
+							_react2.default.createElement('i', { className: 'fa fa-times' })
+						),
+						_react2.default.createElement(
+							'form',
+							{ action: '', onSubmit: this.loginUser },
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement(
+									'label',
+									{ htmlFor: 'email' },
+									'Email:'
+								),
+								_react2.default.createElement('input', { type: 'text', name: 'email', ref: function ref(_ref5) {
+										return _this5.userEmail = _ref5;
+									} })
+							),
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement(
+									'label',
+									{ htmlFor: 'password' },
+									'Password:'
+								),
+								_react2.default.createElement('input', { type: 'password', name: 'password', ref: function ref(_ref6) {
+										return _this5.userPassword = _ref6;
+									} })
+							),
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement('input', { type: 'submit', value: 'Login' })
+							)
+						)
+					),
+					_react2.default.createElement(
+						'div',
+						{ className: 'createUserModal modal', ref: function ref(_ref11) {
+								return _this5.createUserModal = _ref11;
+							} },
+						_react2.default.createElement(
+							'div',
+							{ className: 'close' },
+							_react2.default.createElement('i', { className: 'fa fa-times' })
+						),
+						_react2.default.createElement(
+							'form',
+							{ action: '', onSubmit: this.createUser },
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement(
+									'label',
+									{ htmlFor: 'createEmail' },
+									'Email:'
+								),
+								_react2.default.createElement('input', { type: 'text', name: 'createEmail', ref: function ref(_ref8) {
+										return _this5.createEmail = _ref8;
+									} })
+							),
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement(
+									'label',
+									{ htmlFor: 'createPassword' },
+									'Password:'
+								),
+								_react2.default.createElement('input', { type: 'password', name: 'createPassword', ref: function ref(_ref9) {
+										return _this5.createPassword = _ref9;
+									} })
+							),
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement(
+									'label',
+									{ htmlFor: 'confirmPassword' },
+									'Confirm Password:'
+								),
+								_react2.default.createElement('input', { type: 'password', name: 'confirmPassword', ref: function ref(_ref10) {
+										return _this5.confirmPassword = _ref10;
+									} })
+							),
+							_react2.default.createElement(
+								'div',
+								null,
+								_react2.default.createElement('input', { type: 'submit', value: 'Register' })
+							)
+						)
+					)
+				)
 			);
 		}
 	}]);
@@ -30782,57 +31143,7 @@ var App = function (_React$Component) {
 
 _reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));
 
-},{"./components/Footer":180,"./components/Header":181,"./components/Moods":182,"./components/Recipes":183,"jquery":24,"react":178,"react-dom":27}],180:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = require('react');
-
-var _react2 = _interopRequireDefault(_react);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Footer = function (_React$Component) {
-  _inherits(Footer, _React$Component);
-
-  function Footer() {
-    _classCallCheck(this, Footer);
-
-    return _possibleConstructorReturn(this, (Footer.__proto__ || Object.getPrototypeOf(Footer)).apply(this, arguments));
-  }
-
-  _createClass(Footer, [{
-    key: 'render',
-    value: function render() {
-      return _react2.default.createElement(
-        'div',
-        null,
-        _react2.default.createElement(
-          'p',
-          null,
-          'Hungry? Many thanks to yummly for their API'
-        )
-      );
-    }
-  }]);
-
-  return Footer;
-}(_react2.default.Component);
-
-exports.default = Footer;
-
-},{"react":178}],181:[function(require,module,exports){
+},{"./components/Header":180,"./components/recipeCard.js":181,"jquery":24,"react":178,"react-dom":27}],180:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -30846,6 +31157,10 @@ var _react = require('react');
 var _react2 = _interopRequireDefault(_react);
 
 var _jquery = require('jquery');
+
+var _recipeCard = require('./recipeCard');
+
+var _recipeCard2 = _interopRequireDefault(_recipeCard);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -30861,48 +31176,10 @@ var Header = function (_React$Component) {
 	function Header() {
 		_classCallCheck(this, Header);
 
-		var _this = _possibleConstructorReturn(this, (Header.__proto__ || Object.getPrototypeOf(Header)).call(this));
-
-		_this.state = {
-			mood: ["energy", "cleanse", "wildCard", "starving"],
-			user: []
-
-		};
-
-		return _this;
+		return _possibleConstructorReturn(this, (Header.__proto__ || Object.getPrototypeOf(Header)).apply(this, arguments));
 	}
 
 	_createClass(Header, [{
-		key: 'getRecipes',
-		value: function getRecipes(mood) {
-			var moodToIngredients = {
-				energy: "oatmeal+chia+banana+hemp+peanutbutter",
-				cleanse: "oatmeal+coconut+chia+detox+avocado+spirulina+ginger+raw+maca",
-				wildCard: "chia+buckwheat+pancakes+breakfast%bowl+breakfast",
-				starving: "buckwheat+oatmeal+grains"
-
-			};
-			var userChoice = moodToIngredients[mood];
-			console.log(userChoice);
-			(0, _jquery.ajax)({
-				url: 'http://api.yummly.com/v1/api/recipes',
-				type: 'GET',
-				dataType: 'jsonp',
-				data: {
-					_app_id: 'f4d2ebd2',
-					_app_key: 'e61d860e9e43d60dbc496c726945c64b',
-					q: userChoice,
-					requirePictures: true,
-					maxResult: 20,
-					allowedDiet: ['386^Vegan']
-				}
-
-			}).then(function (data) {
-
-				console.log(data);
-			});
-		}
-	}, {
 		key: 'render',
 		value: function render() {
 			var _this2 = this;
@@ -30914,90 +31191,28 @@ var Header = function (_React$Component) {
 					'header',
 					null,
 					_react2.default.createElement(
-						'h1',
-						null,
-						this.props.tagline
-					),
-					_react2.default.createElement(
-						'nav',
+						'div',
 						null,
 						_react2.default.createElement('input', { type: 'Search', required: true, placeholder: 'Search Ingredient' }),
 						_react2.default.createElement(
-							'search',
-							{ type: 'submit' },
+							'button',
+							{ onSubmit: function onSubmit() {
+									return _this2.getRecipes;
+								}, type: 'submit', name: 'search' },
 							'Search'
 						),
 						_react2.default.createElement(
-							'a',
-							{ href: '#' },
-							'Menu'
-						),
-						_react2.default.createElement(
-							'a',
-							{ href: '#' },
-							'Submit a Recipe'
-						),
-						_react2.default.createElement(
-							'a',
-							{ href: '#' },
-							'Login'
-						),
-						_react2.default.createElement(
-							'a',
-							{ href: '#' },
-							'Recipes>'
+							'h1',
+							null,
+							this.props.tagline
 						)
-					),
-					_react2.default.createElement(
-						'h2',
-						null,
-						'I woke up like..'
-					),
-					_react2.default.createElement(
-						'p',
-						null,
-						'I want inspiration'
-					),
-					_react2.default.createElement(
-						'button',
-						{ onClick: function onClick() {
-								return _this2.getRecipes("energy");
-							} },
-						this.state.mood[0]
-					),
-					_react2.default.createElement(
-						'button',
-						{ onClick: function onClick() {
-								return _this2.getRecipes("cleanse");
-							} },
-						this.state.mood[1]
-					),
-					_react2.default.createElement(
-						'button',
-						{ onClick: function onClick() {
-								return _this2.getRecipes("wildCard");
-							} },
-						this.state.mood[2]
-					),
-					_react2.default.createElement(
-						'button',
-						{ onClick: function onClick() {
-								return _this2.getRecipes("starving");
-							} },
-						this.state.mood[3]
-					),
-					_react2.default.createElement(
-						'p',
-						null,
-						'I want to submit'
-					),
-					_react2.default.createElement(
-						'button',
-						null,
-						'submit a recipe'
 					)
 				),
-				_react2.default.createElement('div', null)
+				_react2.default.createElement(
+					'div',
+					null,
+					')'
+				)
 			);
 		}
 	}]);
@@ -31007,7 +31222,7 @@ var Header = function (_React$Component) {
 
 exports.default = Header;
 
-},{"jquery":24,"react":178}],182:[function(require,module,exports){
+},{"./recipeCard":181,"jquery":24,"react":178}],181:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -31028,119 +31243,93 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Mood = function (_React$Component) {
-	_inherits(Mood, _React$Component);
+var RecipeCard = function (_React$Component) {
+	_inherits(RecipeCard, _React$Component);
 
-	function Mood() {
-		_classCallCheck(this, Mood);
+	function RecipeCard() {
+		_classCallCheck(this, RecipeCard);
 
-		var _this = _possibleConstructorReturn(this, (Mood.__proto__ || Object.getPrototypeOf(Mood)).call(this));
+		var _this = _possibleConstructorReturn(this, (RecipeCard.__proto__ || Object.getPrototypeOf(RecipeCard)).call(this));
 
 		_this.state = {
-			recipe: []
-
+			editing: false,
+			recipe: {}
 		};
-		console.log(_this.state.recipe);
-		console.log(_this.state.mood, "this says the mood");
-		console.log(_this.state.speed, "this says the time user has");
+		_this.save = _this.save.bind(_this);
 		return _this;
 	}
 
-	_createClass(Mood, [{
-		key: "goToRecipe",
-		value: function goToRecipe() {
-			console.log('LOL');
+	_createClass(RecipeCard, [{
+		key: "save",
+		value: function save(e) {
+			e.preventDefault();
+			var dbRef = firebase.database().ref(this.props.recipe.key);
+			dbRef.update({
+				title: this.recipeTitle.value,
+				text: this.recipeText.value
+			});
+			this.setState({
+				editing: false
+
+			});
 		}
 	}, {
 		key: "render",
 		value: function render() {
-			return _react2.default.createElement("div", null);
-		}
-	}]);
+			var _this2 = this;
 
-	return Mood;
-}(_react2.default.Component);
-
-exports.default = Mood;
-
-},{"react":178}],183:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Recipes = function (_React$Component) {
-	_inherits(Recipes, _React$Component);
-
-	function Recipes() {
-		_classCallCheck(this, Recipes);
-
-		return _possibleConstructorReturn(this, (Recipes.__proto__ || Object.getPrototypeOf(Recipes)).apply(this, arguments));
-	}
-
-	_createClass(Recipes, [{
-		key: "render",
-
-		// secondsToTime(time) {
-		// 	let mins = Math.floor(totalSeconds / 60);
-		// 	let secs = totalSeconds % 60
-
-
-		// }
-
-		value: function render() {
+			var editingTemp = _react2.default.createElement(
+				"span",
+				null,
+				_react2.default.createElement(
+					"h4",
+					null,
+					this.props.recipe.title
+				),
+				_react2.default.createElement(
+					"p",
+					null,
+					this.props.recipe.text
+				)
+			);
+			if (this.state.editing) {
+				editingTemp = _react2.default.createElement(
+					"form",
+					{ onSubmit: this.save },
+					_react2.default.createElement(
+						"div",
+						null,
+						_react2.default.createElement("input", { type: "text", defaultValue: this.props.recipe.title, name: "title", ref: function ref(_ref) {
+								return _this2.recipeTitle = _ref;
+							} })
+					),
+					_react2.default.createElement(
+						"div",
+						null,
+						_react2.default.createElement("input", { type: "text", defaultValue: this.props.recipe.text, name: "text", ref: function ref(_ref2) {
+								return _this2.recipeText = _ref2;
+							} })
+					),
+					_react2.default.createElement("input", { type: "submit", value: "Done editing" })
+				);
+			}
 			return _react2.default.createElement(
 				"div",
-				null,
-				" ",
-				this.props.recipes.map(function (recipe, i) {
-					return _react2.default.createElement(
-						"div",
-						{ key: "recipe-" + i },
-						_react2.default.createElement("img", { src: recipe.imageUrlsBySize[90] }),
-						_react2.default.createElement(
-							"button",
-							null,
-							"save"
-						),
-						_react2.default.createElement(
-							"p",
-							null,
-							recipe.recipeName
-						),
-						_react2.default.createElement(
-							"div",
-							null,
-							_react2.default.createElement(
-								"p",
-								{ className: "recipe-ingredients" },
-								recipe.ingredients
-							)
-						)
-					);
-				})
+				{ className: "recipeCard" },
+				_react2.default.createElement("i", { className: "fa fa-edit", onClick: function onClick() {
+						return _this2.setState({ editing: true });
+					} }),
+				_react2.default.createElement("i", { className: "fa fa-times", onClick: function onClick() {
+						return _this2.props.removeRecipe(_this2.state.recipe.key);
+					} }),
+				editingTemp
 			);
 		}
 	}]);
 
-	return Recipes;
+	return RecipeCard;
 }(_react2.default.Component);
 
-exports.default = Recipes;
+exports.default = RecipeCard;
 
 },{"react":178}]},{},[179]);
