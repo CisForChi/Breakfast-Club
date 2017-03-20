@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ajax } from 'jquery';
-import { Router, Route, browserHistory} from 'react-router';
 import Header from './components/Header';
 import RecipeCard from './components/recipeCard.js'
 
@@ -15,12 +14,7 @@ const config = {
 
   firebase.initializeApp(config)
 
- 
- const Contact = () => {
- 	return (
- 	<div>Contact</div>
- 		)
-	}
+  
 
 class App extends React.Component {
 		constructor(){
@@ -44,7 +38,7 @@ class App extends React.Component {
 	//recipe submission 
 	//
 	componentDidMount() {
-		firebase.auth().onAuthStateChanged((users) => {
+		firebase.auth().onAuthStateChanged((user) => {
 			if(user){
 				firebase.database().ref(`users/${user.uid}/recipes`).on('value', (res) => {
 				const userData = res.val();
@@ -118,7 +112,7 @@ class App extends React.Component {
 				this.showCreate(e);
 			})
 			.catch((err) => {
-alert(err.message)
+alert('oops! this e-mail is already in use! 💩')
 
 			})
 
@@ -147,7 +141,7 @@ alert(err.message)
 	 		this.showLogin(e);
 	 	})
 	 	.catch((err) => {
-	 		alert(err.message)
+	 		alert("oh no! wrong password 🤔")
 	 });
  }
  logOut(){
@@ -166,15 +160,10 @@ alert(err.message)
 		}
  	}
 //part of ajax call, assigning objects
-Const About = () => {
- 	
- 	<div>About</div>
- 		
- 	 }
 	getRecipes(mood){
 		const moodToIngredients = {	
 			energy: "oatmeal+chia+banana+hemp+peanutbutter",
-			cleanse: "oatmeal+coconut+chia+detox+avocado+spirulina+ginger+raw+maca",
+			cleanse: "oatmeal+coconut+chia+detox+avocado+raw+spirulina+walnut",
 			wildCard: "chia+buckwheat+pancakes+breakfast%bowl+breakfast",
 			starving: "buckwheat+oatmeal+grains"
 		}
@@ -194,6 +183,9 @@ Const About = () => {
 		})
 
 		.then((data) => {
+			this.setState({
+				userChoice: data.matches
+			})
 			console.log(data);
 		});
 		}
@@ -209,9 +201,6 @@ Const About = () => {
 						<span>
 					<a href="#" onClick={this.showSidebar}>Submit a Recipe</a>
 					<a href="#" onClick={this.logOut}>Logout</a>
-					
-	
-		
 					</span>
 					)
 				}
@@ -227,14 +216,11 @@ Const About = () => {
 		}
 						
 		</nav>
-		<Header tagline="Breakfast 🍽 Club" loadRecipes={this.loadRecipes} />
-				<h2>I woke up like..</h2>
-					<p>I want inspiration</p>
-					<button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button>
-					<button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button>
-					<button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button>
-					<button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button>
+		
 
+		<div className="form-start">
+		
+		
 		<div className="createUserModal modal" ref={ref => this.createUserModal = ref}>
 			<div className="close">
 				<i className="fa fa-times"></i>
@@ -256,12 +242,13 @@ Const About = () => {
 						<input type="submit" value="Register"/>
 					</div>
 				</form>
+				</div>
 
 </div>
 					
 					
 						
-					<div className="overlay" ref={ref => this.overlay =ref}></div>
+		<div className="overlay" ref={ref => this.overlay =ref}></div>
 		<section className="recipes">
 			{this.renderRecipes}
 		</section>
@@ -285,7 +272,6 @@ Const About = () => {
 			<input type="submit" value="Add New Recipe"/>
 			</form>
 		</aside>
-		
 
 		<div className="loginModal modal" ref={ref => this.loginModal = ref}>
 			<div className="close" onClick={this.showLogin}>
@@ -304,42 +290,43 @@ Const About = () => {
 						<input type="submit" value="Login"/>
 					</div>
 				</form>
-
 			</div>
 
 		</div>
-		
+		<Header tagline="Breakfast 🍽 Club" loadRecipes={this.loadRecipes} />
+				<h2>I woke up like..</h2>
+				
+					<button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button>
+					<button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button>
+					<button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button>
+					<button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button>
+			<p>Or...inspire others!</p>
+		<div className="recipe-results">
+			<ul>
+				{this.state.userChoice.map((recipe) => {
+					return (
+
+						<span>
+						<li>{recipe.recipeName}</li>
+						<span>
+						<img className="recipe-pic" src={recipe.smallImageUrls[0]} />
+						</span>
+						<li>{recipe.totalTimeInSeconds}</li>
+
+						<a href="#"> 🌸💕 </a>
+						<i className="fa fa-times"></i>
+			<div className="close-btn" onClick={this.showSidebar}>
+				<i className="fa fa-times"></i>
+						</div>
+
+						</span>
+					)
+				}
+			)}
+			</ul>
+		</div>
 		</div>
 		)
-	
 	}
-
-
 }
-
-
-
-ReactDOM.render(
-	<Router history={browserHistory}>
-    <Route path="/" component={App} />
-      <Route path="/about" component={About} />
-  </Router>, document.getElementById('app'));
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ReactDOM.render(<App />, document.getElementById('app'));

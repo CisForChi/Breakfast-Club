@@ -9,6 +9,7 @@ h1 {
 
 
 	font-family: 'Homemade Apple', cursive;
+	color:rgb(255,202,184);
 
 
 }
@@ -37,7 +38,7 @@ body {
 	justify-content:flex-start;
 
 	border:1px solid lightcyan;
-	background:#F5F5F5;
+	background:rgb(255,253,213);	
 	padding:15px;
 	margin:0 auto;
 	width:100%;
@@ -48,18 +49,49 @@ a {
 	color:black;
 	padding:5px;
 	margin:5px;
-	text-decoration-color: darkcyan;
+	text-decoration-color:rgb(229,219,226);
+
 
 }
 button {
 	color:black;
 	border:1px solid black;
 	padding:5px 10px;
-	background:#FFEFD5;
+	background:rgb(155,183,209);
 
 	
 }
-/*..sidebar {
+.return-results {
+	border:1px solid black;
+	color: rgb(191,124,113);
+	height:50vh;
+	width:50%;
+	display:inline-flex;
+	justify-content:center;
+	flex-direction:center;
+}
+
+.recipe-results {
+	border:1px solid black;
+	display:inline-flex;
+	background-color: rgba(175,184,251,.6);	
+;
+	justify-content:center;
+	flex-direction:column;
+
+}
+
+.recipe-pic {
+	display:flex;
+	justify-content:center;
+	flex-direction:column;
+
+	border:5px solid rgb(155,183,209);
+}
+li {
+	list-style:none;
+}
+.sidebar {
 	width: 250px;
 	position: absolute;
 	top: 0;
@@ -94,29 +126,17 @@ button {
 	right: 5px;
 }
 
-img {
-	width:100px;
-	height:100px;
-	border:1px solid pink;
-	display:inline-flex;
-}
-.recipe-ingredients {
-	display:flex;
-	justify-content:flex-start;
-	flex-direction:column;
-	
-	margin:2px;
-	padding:2px;
+/*
+	Notes container
+*/
 
-}
-
-.recipes {
+.notes {
 	padding: 0 50px;
 	display: flex;
 	flex-wrap: wrap;
 }
 
-.recipeCard {
+.noteCard {
 	flex: 1 0 200px;
 	background: white;
 	box-shadow: 3px 2px 3px rgba(0,0,0,0.1);
@@ -125,12 +145,12 @@ img {
 	position: relative;
 }
 
-.recipeCard h4 {
+.noteCard h4 {
 	margin-top: 0;
 	position: relative;
 }
 
-.recipeCard h4:after {
+.noteCard h4:after {
 	width: 20px;
 	height: 2px;
 	background: #182020;
@@ -141,37 +161,25 @@ img {
 	content: "";
 }
 
-.recipeCard input,
-.recipeCard textarea {
+.noteCard input,
+.noteCard textarea {
 	border: none;
 	border-bottom: 2px solid #182020;
 	margin-bottom: 10px;
 	width: 100%;
 }
 
-.recipeCard input[type=submit] {
+.noteCard input[type=submit] {
 	width: auto;
 	border: 2px solid #182020;
 	color: #182020;
 	background: transparent;
 }
-form {
-	border:1px solid #F5F5F5;
 
-	background: #F5F5F5;
-	display: inline-flex;
-	justify-content:center;
-	flex-direction:column;
-	width:100%;
-	padding:25px;
-}
-.overlay {
-	top: 0;
-	left: 0;
-	height: 100%;
-	width: 100%;
-	background: rgba(0,0,0,0.4);
-}
+/*
+	Modals
+*/
+
 .modal,
 .overlay {
 	visibility: hidden;
@@ -179,11 +187,13 @@ form {
 	transition: all 0.3s ease;
 	position: absolute;
 }
+
 .modal.show,
 .overlay.show {
 	visibility: visible;
 	opacity: 1;
 }
+
 .modal {
 	width: 400px;
 	background: white;
@@ -201,7 +211,12 @@ form {
 	margin-right: 10px;
 }
 
+.overlay {
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba(0,0,0,0.4);
+}
 
-.sidebar {
-	border:1px solid black;
-}*/
+

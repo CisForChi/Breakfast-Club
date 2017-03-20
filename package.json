@@ -25,6 +25,8 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "jquery": "^3.1.1"
+    "jquery": "^3.1.1",
+    "react-autosuggest": "^9.0.0",
+    "react-search": "^2.0.5"
   }
 }
