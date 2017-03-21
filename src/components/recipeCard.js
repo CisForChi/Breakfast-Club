@@ -24,16 +24,7 @@ editing: false
 
 });
 }
-// getRecipeIngredients() {
-// 		if(this.props.recipe.ingredients !== "") {
-// 			return this.props.recipe.ingredients.map((recipeIngred, i) => {
-// 					return (
-// 						<li key={i}>{recipeIngred}</li>
-// 					)
-// 				}
-// 			);
-// 		}
-// 	}
+
 render() {
 	let editingTemp = (
 		<span>
@@ -63,8 +54,10 @@ return (
 	<span>
 <div className="recipeCard">
 			   <i className="fa fa-edit" onClick={() => this.setState({editing:true})}></i>
-			   <i className="fa fa-times" onClick={() => this.props.removeRecipe(this.state.recipe.key)}></i>
+	
+			     <i className="fa fa-times" onClick={() => this.props.removeRecipe(this.props.recipe.key)}></i>
 			   {editingTemp}
+			  
 			  
 			</div>
 

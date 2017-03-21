@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ajax } from 'jquery';
 import Header from './components/Header';
-import RecipeCard from './components/recipeCard.js'
+import RecipeCard from './components/recipeCard.js';
 
 const config = {
     apiKey: "AIzaSyBfjT7C3FsJraXTdt0OuhL3dVZJIgPq-UA",
@@ -20,10 +20,11 @@ class App extends React.Component {
 		constructor(){
 		super();
 		this.state = {
-			mood: ["energy", "cleanse", "wildCard", "starving"],
+			mood: ["Give Me Energy", "My Body Is (Probably) Mad At Me", "WildCard", "SweetTooth"],
 			userChoice: [],
 			recipes:[],
 			loggedin: false
+			
 		};
 		//binding elements
 		this.showSidebar= this.showSidebar.bind(this);
@@ -33,6 +34,9 @@ class App extends React.Component {
 		this.createUser = this.createUser.bind(this);
 		this.showLogin = this.showLogin.bind(this);
 		this.loginUser = this.loginUser.bind(this);
+		this.logOut = this.logOut.bind(this);
+		
+
 
 		}
 	//recipe submission 
@@ -40,13 +44,16 @@ class App extends React.Component {
 	componentDidMount() {
 		firebase.auth().onAuthStateChanged((user) => {
 			if(user){
+				console.log(user);
 				firebase.database().ref(`users/${user.uid}/recipes`).on('value', (res) => {
-				const userData = res.val();
+				let userData = res.val();
 				const dataArray = [];
 				for(let objKey in userData) {
+
 					userData[objKey].key = objKey;
 					dataArray.push(userData[objKey])
 			 }
+			 console.log(dataArray);
 			 this.setState({
 			 	recipes: dataArray,
 			 	loggedin: true
@@ -64,7 +71,8 @@ class App extends React.Component {
 }
 	showSidebar(e){
 		e.preventDefault();
-		this.sidebar.classList.add("show");
+		console.log("hey");
+		this.sidebar.classList.toggle("show");
 		}
 	addRecipe(e) {
 		e.preventDefault();
@@ -74,7 +82,7 @@ class App extends React.Component {
 			ingredients:this.recipeIngredients.value
 		};
 	const userId= firebase.auth().currentUser.uid
-	const dbRef = firebase.database().ref(`users/${userId}/recipes `);
+	const dbRef = firebase.database().ref(`users/${userId}/recipes/${recipeId}`);
 
 	dbRef.push(recipe);	
 	
@@ -87,7 +95,7 @@ class App extends React.Component {
 
 	removeRecipe(recipeId){
 		const userId = firebase.auth().currentUser.uid;
-		const dbRef= firebase.database().ref(`users/${user.uid}/recipes/${recipeId}`);
+		const dbRef= firebase.database().ref(`users/${userId}/recipes/${recipeId}`);
 		dbRef.remove();
 
 	}
@@ -145,25 +153,42 @@ alert('oops! this e-mail is already in use! 💩')
 	 });
  }
  logOut(){
- 	firebase.auth().signOut;
+ 	firebase.auth().signOut();
  }
  renderRecipes() {
- 	if(this.state.loggedin){
- 		return this.state.recipes.map((recipe, i) => {
-				return (
-					<RecipeCard recipe={recipe} key={`recipe-${i}`} removeRecipe={this.removeRecipe} />
-					)
-			}).reverse()
-		}
-		else {
-			return <h2>Please login to add a recipe. 🍽 </h2>
-		}
- 	}
+ 	return this.state.recipes.map((recipe, i) => {
+		return (
+			<RecipeCard recipe={recipe} key={`recipe-${i}`} removeRecipe={this.removeRecipe} />
+		)
+	}).reverse()
+
+
+ }
+ uploadPhoto(e) {
+        console.log('upload photo');
+        let file = e.target.files[0];
+        const storageRef = firebase.storage().ref('photos/' + file.name);
+        const task = storageRef.put(file).then(() => {
+            const urlObject = storageRef.getDownloadURL().then((data) => {
+                console.log(data);
+                this.setState ({
+                    photo: data
+                })
+            })
+        });
+
+    }
+
+    showRecipeCard() {
+    	console.log("show card");
+    }
+
 //part of ajax call, assigning objects
 	getRecipes(mood){
 		const moodToIngredients = {	
-			energy: "oatmeal+chia+banana+hemp+peanutbutter",
-			cleanse: "oatmeal+coconut+chia+detox+avocado+raw+spirulina+walnut",
+
+			energy: "chia+superfood+oatmeal",
+			cleanse: "detox+breakfast%bowl",
 			wildCard: "chia+buckwheat+pancakes+breakfast%bowl+breakfast",
 			starving: "buckwheat+oatmeal+grains"
 		}
@@ -177,22 +202,39 @@ alert('oops! this e-mail is already in use! 💩')
 				_app_key: 'e61d860e9e43d60dbc496c726945c64b',
 				q: userChoice,
 				requirePictures: true,
-				maxResult:20,
+				maxResult:27,
 				allowedDiet: ['386^Vegan'],
 			}
 		})
 
 		.then((data) => {
-			this.setState({
-				userChoice: data.matches
-			})
-			console.log(data);
+			data.matches.map((match) => {
+				ajax({
+					url: `http://api.yummly.com/v1/api/recipe/${match.id}`,
+					type: 'GET',
+					dataType: 'jsonp',
+					data: {
+						_app_id: 'f4d2ebd2', 
+						_app_key: 'e61d860e9e43d60dbc496c726945c64b',
+					}
+				}).then((recipe) => {
+					match.recipe = recipe;
+					return match; 
+				}).then(() => {
+					this.setState({
+						userChoice: data.matches
+
+					});
+					console.log(data);
+
+				});
+			});
 		});
 		}
 
 	render() {
 	return(
-		<div>
+		<div className="wrapper__head">
 		<nav className="head-nav">
 		{
 			(() => {
@@ -248,9 +290,9 @@ alert('oops! this e-mail is already in use! 💩')
 					
 					
 						
-		<div className="overlay" ref={ref => this.overlay =ref}></div>
+		<div className="overlay" ref={ref => this.overlay = ref}></div>
 		<section className="recipes">
-			{this.renderRecipes}
+			{this.renderRecipes()}
 		</section>
 		<div>
 
@@ -260,16 +302,18 @@ alert('oops! this e-mail is already in use! 💩')
 			<form onSubmit={this.addRecipe}>
 			<h3>Add New Recipe</h3>
 			<div className="close-btn" onClick={this.showSidebar}>
+			<a href="" onClick= {this.showSidebar}>Add New Recipe</a>
 				<i className="fa fa-times"></i>
+			}
 			</div>
 			<label htmlFor="recipe-title">Name It:</label>
 			<input type="text" name="recipe-title" ref={ref => this.recipeTitle = ref}/>
 			<label htmlFor="recipe-text">What's in it?:</label>
 			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
 			
-			<label htmlFor="recipe-ingredients">Photo?:</label>
-			<textarea name="recipe-ingrdients" ref={ref => this.recipeIngredients = ref}></textarea>
-			<input type="submit" value="Add New Recipe"/>
+			<label htmlFor="recipe-ingredients">Upload a photo</label>
+		
+			<input type="file" accept="image/*" onChange={this.uploadPhoto}/>
 			</form>
 		</aside>
 
@@ -293,40 +337,66 @@ alert('oops! this e-mail is already in use! 💩')
 			</div>
 
 		</div>
-		<Header tagline="Breakfast 🍽 Club" loadRecipes={this.loadRecipes} />
-				<h2>I woke up like..</h2>
-				
+	
+    		<div className="wrapper">
+
+		<Header tagline="Breakfast Club" loadRecipes={this.loadRecipes} />
+		<div className="box-1">
+
+
+		 <p>Be Inspired</p>
+		// </div>
+		// <div className="box-2">
+		 <p>Inspire others</p>
+		</div>
+			
+			<div className="recipes-buttons">
 					<button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button>
 					<button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button>
 					<button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button>
 					<button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button>
-			<p>Or...inspire others!</p>
+			</div>
+	
 		<div className="recipe-results">
 			<ul>
 				{this.state.userChoice.map((recipe) => {
 					return (
+					<div className="recipe-container">
+					<div className="recipe-title-pic">
+							<span>
+							<figure className="earlybird"><img className="recipe-pic-two" src={recipe.recipe.images[0].hostedLargeUrl} /></figure>
+							<li className="recipe-name">{recipe.recipeName}</li>
+							<li className="recipe-links"><a href="#">ingredients</a></li>
+							<li className="recipe-links"><a href="#">how-to-make</a></li>
+							
+							</span>
+					</div>
+		</div>
 
-						<span>
-						<li>{recipe.recipeName}</li>
-						<span>
-						<img className="recipe-pic" src={recipe.smallImageUrls[0]} />
-						</span>
-						<li>{recipe.totalTimeInSeconds}</li>
-
-						<a href="#"> 🌸💕 </a>
-						<i className="fa fa-times"></i>
-			<div className="close-btn" onClick={this.showSidebar}>
-				<i className="fa fa-times"></i>
-						</div>
-
-						</span>
-					)
-				}
-			)}
+		)
+					// img src this. state. photo
+	}
+)}
 			</ul>
-		</div>
-		</div>
+	</div>
+</div>
+</div>
 		)
 	}
 }
 ReactDOM.render(<App />, document.getElementById('app'));
+	// <div className="recipe-information">
+						// 	<li>{recipe.totalTimeInSeconds / 60}</li> 
+						// 	<li>{recipe.recipe.cookTime}</li>
+						// 	<li>
+						// 	<span>{recipe.ingredients}</span>
+						// 	</li> 
+						// 	<span>
+						// 	<li className="ingredient-lines">{recipe.recipe.ingredientLines}</li>
+						// 	</span>
+						//  </div>
+			
+					
+
+						// <a href="#"> 🌸💕 </a>
+						// <i className="fa fa-times"></i>

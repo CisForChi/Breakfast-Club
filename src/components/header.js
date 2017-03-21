@@ -13,7 +13,7 @@ export default class Header extends React.Component {
 				<div>
 					
 					<h1>{this.props.tagline}</h1>
-					<h2>healthy is not always tasteless</h2>
+					
 					
 			
 
