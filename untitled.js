@@ -128,3 +128,40 @@ import React from 'react';
 			</ul>
 			</content>
 			</div>
+
+				// <div className="recipe-information">
+	// 						<li>{recipe.totalTimeInSeconds / 60}</li> 
+	// 						<li>{recipe.recipe.cookTime}</li>
+	// 						<li>
+	// 						<span>{recipe.ingredients}</span>
+	// 						</li> 
+	// 						<span>
+	// 						<li className="ingredient-lines">{recipe.recipe.ingredientLines}</li>
+	// 						</span>
+	// 					 </div>
+			
+					
+
+	// 					<a href="#"> 🌸💕 </a>
+	// 					<i className="fa fa-times"></i>// <div className="recipe-information">
+	// 						<li>{recipe.totalTimeInSeconds / 60}</li> 
+	// 						<li>{recipe.recipe.cookTime}</li>
+	// 						<li>
+	// 						<span>{recipe.ingredients}</span>
+	// 						</li> 
+	// 						<span>
+	// 						<li className="ingredient-lines">{recipe.recipe.ingredientLines}</li>
+	// 						</span>
+	// 					 </div>
+			
+					
+
+	// 					<a href="#"> 🌸💕 </a>
+	// 					<i className="fa fa-times"></i>
+<img className="utensils" src="../utensils.png" />
+// <div className="box-1">
+// 		//  <p>Be Inspired</p>
+// 		// // </div>
+// 		// // <div className="box-2">
+// 		//  <p>Inspire others</p>
+// 		// </div>

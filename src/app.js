@@ -14,18 +14,16 @@ const config = {
 
   firebase.initializeApp(config)
 
-  
-
-class App extends React.Component {
+  class App extends React.Component {
 		constructor(){
 		super();
 		this.state = {
-			mood: ["Give Me Energy", "My Body Is (Probably) Mad At Me", "WildCard", "SweetTooth"],
+			mood: ["Fuel", "I Think My Body Is Mad At Me", "A WildCard", "My SweetTooth"],
 			userChoice: [],
 			recipes:[],
-			loggedin: false
-			
-		};
+			loggedin: false,
+			isModalOpen: false 
+			};
 		//binding elements
 		this.showSidebar= this.showSidebar.bind(this);
 		this.addRecipe = this.addRecipe.bind(this);
@@ -35,12 +33,10 @@ class App extends React.Component {
 		this.showLogin = this.showLogin.bind(this);
 		this.loginUser = this.loginUser.bind(this);
 		this.logOut = this.logOut.bind(this);
-		
-
-
-		}
+		this.closeRecipes = this.closeRecipes.bind(this);
+		this.uploadPhoto = this.uploadPhoto.bind(this);
+	}
 	//recipe submission 
-	//
 	componentDidMount() {
 		firebase.auth().onAuthStateChanged((user) => {
 			if(user){
@@ -49,7 +45,6 @@ class App extends React.Component {
 				let userData = res.val();
 				const dataArray = [];
 				for(let objKey in userData) {
-
 					userData[objKey].key = objKey;
 					dataArray.push(userData[objKey])
 			 }
@@ -76,37 +71,36 @@ class App extends React.Component {
 		}
 	addRecipe(e) {
 		e.preventDefault();
+		console.log("hey");
 		const recipe = {
 			title: this.recipeTitle.value,
 			text: this.recipeText.value,
 			ingredients:this.recipeIngredients.value
 		};
 	const userId= firebase.auth().currentUser.uid
-	const dbRef = firebase.database().ref(`users/${userId}/recipes/${recipeId}`);
-
+	const dbRef = firebase.database().ref(`users/${userId}/recipes/`);
 	dbRef.push(recipe);	
-	
-		
+		console.log(recipe, "hey");
 		this.recipeTitle.value = "";
 		this.recipeText.value = "";
-		this.recipeIngredients.value="";
+		this.recipeIngredients.value= "";
 		this.showSidebar(e);
 	}
-
-	removeRecipe(recipeId){
+	removeRecipe(e){
 		const userId = firebase.auth().currentUser.uid;
-		const dbRef= firebase.database().ref(`users/${userId}/recipes/${recipeId}`);
+		const dbRef= firebase.database().ref(`users/${userId}/recipes/`);
 		dbRef.remove();
-
 	}
 	showCreate(e){
 		e.preventDefault();
 		this.overlay.classList.toggle('show');
 		this.createUserModal.classList.toggle('show');
-
 	}
 	createUser(e){
 		e.preventDefault();
+		e.preventDefault();
+	 	this.overlay.classList.toggle('show');
+	 	this.createUserModal.classList.toggle('show');
 		//check if passwords match
 		//then create user
 		//
@@ -120,17 +114,15 @@ class App extends React.Component {
 				this.showCreate(e);
 			})
 			.catch((err) => {
-alert('oops! this e-mail is already in use! 💩')
-
+			alert('ruh-oh! wrong password!✨🌺 🌸 💐 🌻 ✨')
 			})
-
 		}
 		else {
 			alert({
-  title: "Sweet!",
-  text: "Here's a custom image.",
-  imageUrl: "images/thumbs-up.jpg"
-});
+			  title: "Sweet!",
+			  text: "Here's a custom image.",
+			  imageUrl: "images/thumbs-up.jpg"
+			});
 		}
 	} 
 	 showLogin(e){
@@ -155,22 +147,37 @@ alert('oops! this e-mail is already in use! 💩')
  logOut(){
  	firebase.auth().signOut();
  }
+closeRecipes(e){
+ 	e.preventDefault();
+		console.log("hey");
+		this.closeRecipes.classList.toggle("show");
+ }
  renderRecipes() {
  	return this.state.recipes.map((recipe, i) => {
 		return (
-			<RecipeCard recipe={recipe} key={`recipe-${i}`} removeRecipe={this.removeRecipe} />
+		<RecipeCard recipe={recipe} key={`recipe-${i}`} removeRecipe={this.removeRecipe} />
 		)
 	}).reverse()
+}
+   openModal(e) {
+    e.preventDefault(e);
+    	
+}
+  closeModal() {
+    e.preventDefault(e);
+  }
 
 
- }
- uploadPhoto(e) {
-        console.log('upload photo');
+    showRecipeCard() {
+    	console.log("show card");
+    }
+    uploadPhoto(e) {
+        console.log('upload photo')
         let file = e.target.files[0];
         const storageRef = firebase.storage().ref('photos/' + file.name);
         const task = storageRef.put(file).then(() => {
             const urlObject = storageRef.getDownloadURL().then((data) => {
-                console.log(data);
+                console.log("picture", data);
                 this.setState ({
                     photo: data
                 })
@@ -179,18 +186,14 @@ alert('oops! this e-mail is already in use! 💩')
 
     }
 
-    showRecipeCard() {
-    	console.log("show card");
-    }
-
 //part of ajax call, assigning objects
 	getRecipes(mood){
 		const moodToIngredients = {	
 
 			energy: "chia+superfood+oatmeal",
-			cleanse: "detox+breakfast%bowl",
+			cleanse: "detox+breakfast",
 			wildCard: "chia+buckwheat+pancakes+breakfast%bowl+breakfast",
-			starving: "buckwheat+oatmeal+grains"
+			starving: "pancakes+maple%syrup+sweet+banana"
 		}
 		const userChoice = moodToIngredients[mood]
 		ajax({
@@ -202,11 +205,10 @@ alert('oops! this e-mail is already in use! 💩')
 				_app_key: 'e61d860e9e43d60dbc496c726945c64b',
 				q: userChoice,
 				requirePictures: true,
-				maxResult:27,
+				maxResult:30,
 				allowedDiet: ['386^Vegan'],
 			}
 		})
-
 		.then((data) => {
 			data.matches.map((match) => {
 				ajax({
@@ -223,51 +225,46 @@ alert('oops! this e-mail is already in use! 💩')
 				}).then(() => {
 					this.setState({
 						userChoice: data.matches
-
 					});
 					console.log(data);
-
 				});
 			});
 		});
 		}
-
 	render() {
-	return(
+		return(
+			<main>
 		<div className="wrapper__head">
-		<nav className="head-nav">
-		{
+
+			<nav className="head-nav">
+				<img src="../croissant.png"/>
+			{
 			(() => {
 				if(this.state.loggedin){
 					return(
-						<span>
-					<a href="#" onClick={this.showSidebar}>Submit a Recipe</a>
-					<a href="#" onClick={this.logOut}>Logout</a>
+					<span>
+					<a href="#" className="submitRecipe" onClick={this.showSidebar}>Submit a Recipe</a>
+					<a href="#" className="signOut" onClick={this.logOut}>Logout</a>
 					</span>
 					)
 				}
 				else{
 					return(
 						<span>
-						<a href="" onClick={this.showCreate}>Create Account</a>
-						<a href="#" onClick={this.showLogin}>Login</a>
+							<a href="" className="signIn" onClick={this.showCreate}>Create Account</a>
+						<a className="signIn" href="#" onClick={this.showLogin}>Login</a>
 						</span>
 					)
 				}
 			})()
 		}
-						
-		</nav>
-		
-
+			</nav>
 		<div className="form-start">
-		
-		
-		<div className="createUserModal modal" ref={ref => this.createUserModal = ref}>
-			<div className="close">
-				<i className="fa fa-times"></i>
+			<div className="createUserModal modal" ref={ref => this.createUserModal = ref}>
+				<div className="close" onClick={this.createUser}>
+					<i className="fa fa-times"></i>
 			</div>
-		<form action="" onSubmit={this.createUser}>
+		<form action="" onSubmit={ref => this.createUser = ref}>
 			<div>
 				<label htmlFor="createEmail">Email:</label>
 				<input type="text" name="createEmail" ref={ref => this.createEmail = ref}/>
@@ -281,106 +278,118 @@ alert('oops! this e-mail is already in use! 💩')
 				<input type="password" name="confirmPassword" ref={ref => this.confirmPassword = ref}/>
 				</div>
 				<div>
-						<input type="submit" value="Register"/>
-					</div>
+				<input type="submit" value="Create"/>
+			</div>
 				</form>
 				</div>
-
-</div>
-					
-					
-						
-		<div className="overlay" ref={ref => this.overlay = ref}></div>
+		</div>
+	<div className="overlay" ref={ref => this.overlay = ref}></div>
 		<section className="recipes">
 			{this.renderRecipes()}
 		</section>
 		<div>
+	<aside className="sidebar" ref={ref => this.sidebar = ref}>
+		<form onSubmit={this.addRecipe}>
 
-
-
-		<aside className="sidebar" ref={ref => this.sidebar = ref}>
-			<form onSubmit={this.addRecipe}>
-			<h3>Add New Recipe</h3>
-			<div className="close-btn" onClick={this.showSidebar}>
-			<a href="" onClick= {this.showSidebar}>Add New Recipe</a>
-				<i className="fa fa-times"></i>
-			}
-			</div>
-			<label htmlFor="recipe-title">Name It:</label>
+			<h3>Add New Recipe 🍽</h3>
+<img className="squiggle" src="../mustrad-stroke.png" />
+		<div className="close-btn" onClick={this.showSidebar}>
+			<i className="fa fa-times"></i>
+		</div>
+			<label htmlFor="recipe-title">Name It✨:</label>
 			<input type="text" name="recipe-title" ref={ref => this.recipeTitle = ref}/>
-			<label htmlFor="recipe-text">What's in it?:</label>
+			<label htmlFor="recipe-text">What's in it?✨:</label>
 			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
+			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
+			<label htmlFor="recipe-ingredients">Recipe description✨:</label>
+			<img src={this.state.Uploadphoto}/>
 			
-			<label htmlFor="recipe-ingredients">Upload a photo</label>
-		
+			<textarea name="recipe-text" ref={ref => this.recipeIngredients = ref}></textarea>
 			<input type="file" accept="image/*" onChange={this.uploadPhoto}/>
+			<img src={this.state.photo}/>
+			<input className="addRecipe" type="submit" value="Add Recipe"/>
 			</form>
-		</aside>
-
-		<div className="loginModal modal" ref={ref => this.loginModal = ref}>
-			<div className="close" onClick={this.showLogin}>
+	</aside>
+	<div className="loginModal modal" ref={ref => this.loginModal = ref}>
+		<div className="close" onClick={this.showLogin}>
 				<i className="fa fa-times"></i>
-			</div>
-			<form action="" onSubmit={this.loginUser}>
-					<div>
-						<label htmlFor="email">Email:</label>
-						<input type="text" name="email" ref={ref =>this.userEmail = ref}/>
-					</div>
-					<div>
-						<label htmlFor="password">Password:</label>
-						<input type="password" name="password" ref={ref => this.userPassword = ref}/>
-					</div>
-					<div>
-						<input type="submit" value="Login"/>
-					</div>
-				</form>
-			</div>
-
 		</div>
-	
-    		<div className="wrapper">
-
-		<Header tagline="Breakfast Club" loadRecipes={this.loadRecipes} />
-		<div className="box-1">
-
-
-		 <p>Be Inspired</p>
-		// </div>
-		// <div className="box-2">
-		 <p>Inspire others</p>
+	<form action="" onSubmit={this.loginUser}>
+		<div>
+			<label htmlFor="email">Email:</label>
+			<input type="text" name="email" ref={ref =>this.userEmail = ref}/>
 		</div>
-			
-			<div className="recipes-buttons">
-					<button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button>
-					<button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button>
-					<button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button>
-					<button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button>
-			</div>
-	
-		<div className="recipe-results">
-			<ul>
-				{this.state.userChoice.map((recipe) => {
-					return (
-					<div className="recipe-container">
-					<div className="recipe-title-pic">
-							<span>
-							<figure className="earlybird"><img className="recipe-pic-two" src={recipe.recipe.images[0].hostedLargeUrl} /></figure>
-							<li className="recipe-name">{recipe.recipeName}</li>
-							<li className="recipe-links"><a href="#">ingredients</a></li>
-							<li className="recipe-links"><a href="#">how-to-make</a></li>
-							
-							</span>
-					</div>
+		<div>
+		<label htmlFor="password">Password:</label>
+		<input type="password" name="password" ref={ref => this.userPassword = ref}/>
 		</div>
-
-		)
-					// img src this. state. photo
-	}
-)}
-			</ul>
+		<div>
+		<input type="submit" value="Login"/>
+		</div>
+		</form>
 	</div>
 </div>
+	<div className="wrapper">
+			<header> 
+				<h1>the breakfast club</h1>
+					<img className="squiggle" src="../mustrad-stroke.png" />
+			</header>
+					<ul className="navBar clearfix">
+						<li><button className="navButton">I'm here for the...</button>
+							<ul className="sub-menu">
+								<li className="navButton"><button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button></li>
+									<li className="navButton"><button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button></li>
+									<li className="navButton"><button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button></li>
+								<li className="navButton"><button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+<div className="menu_items">
+	<div className="closeRecipe" ref={ref => this.closeRecipes = ref}>
+	</div>
+		<div className="recipe-wrapper">
+			{this.state.userChoice.map((recipe) => {
+					return (
+					
+		<div className="recipe-container">
+			<img src={recipe.recipe.images[0].hostedLargeUrl} />
+					<div className="recipe-name">{recipe.recipeName}</div>
+					<div className="recipe-links"> 
+						<a className="btn_recipe" href="#open-modal">Ingredients</a> </div>
+							<div class="socialMedia">
+								<a href="" onClick={this.closeRecipes}><img src="../x.png"/></a>
+								<img src="../heart.png"/>
+							</div>
+					<div className="recipe-modal">
+					<div id="open-modal" className="modal-window">
+					<ul className="ingredients">
+						<li><strong>Ingredients:</strong><p>{recipe.ingredients}</p>
+						<li><strong>Prep</strong>:
+						<p>{recipe.recipe.ingredientLines}</p>
+						</li>
+						<li><strong>prep time:</strong>{recipe.totalTimeInSeconds / 60} mins</li> 
+						</li>
+					</ul>
+						<a href="#modal-close" title="Close" className="modal-close">Close</a>
+		</div>
+
+
+	</div>
 </div>
+	
+		)
+					
+	}
+)}
+		</div>	
+	</div>
+
+</div>
+
+</main>
+
+
 		)
 	}
 }
@@ -396,7 +405,6 @@ ReactDOM.render(<App />, document.getElementById('app'));
 						// 	</span>
 						//  </div>
 			
-					
 
 						// <a href="#"> 🌸💕 </a>
 						// <i className="fa fa-times"></i>

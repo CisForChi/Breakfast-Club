@@ -13,7 +13,7 @@ constructor() {
 save(e) {
 e.preventDefault();
 const userId = firebase.auth().currentUser.uid;
-const dbRef = firebase.database().ref(`users/${user.uid}/recipes/${this.props.recipe.key}`);
+const dbRef = firebase.database().ref(`users/${user.Id}/recipes/${this.props.recipe.recipeId}`);
 dbRef.update({
 	title:this.recipeTitle.value,
 	text: this.recipeText.value,
@@ -45,24 +45,24 @@ render() {
 				<div>
 				<input type="text" defaultValue={this.props.recipe.ingredients} name="ingredients" ref={ref => this.recipeIngredients = ref }/>
 				</div>
-				<input type="submit" value="Done editing"/>
+				<input type="submit" value="Re-Submit!"/>
 			</form>
 
 			)
 	}
 return (
-	<span>
+	
 <div className="recipeCard">
 			   <i className="fa fa-edit" onClick={() => this.setState({editing:true})}></i>
 	
-			     <i className="fa fa-times" onClick={() => this.props.removeRecipe(this.props.recipe.key)}></i>
+			     <i className="fa fa-times-circle" onClick={() => this.props.removeRecipe(this.props.recipe.recipeId)}></i>
 			   {editingTemp}
 			  
 			  
 			</div>
 
 			
-</span>
+
 )
 
 
