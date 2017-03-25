@@ -197,7 +197,7 @@ closeRecipes(e){
 		}
 		const userChoice = moodToIngredients[mood]
 		ajax({
-			url: 'http://api.yummly.com/v1/api/recipes',
+			url: 'https://api.yummly.com/v1/api/recipes',
 			type: 'GET',
 			dataType: 'jsonp',
 			data: {
@@ -212,7 +212,7 @@ closeRecipes(e){
 		.then((data) => {
 			data.matches.map((match) => {
 				ajax({
-					url: `http://api.yummly.com/v1/api/recipe/${match.id}`,
+					url: `https://api.yummly.com/v1/api/recipe/${match.id}`,
 					type: 'GET',
 					dataType: 'jsonp',
 					data: {
@@ -237,23 +237,49 @@ closeRecipes(e){
 		<div className="wrapper__head">
 
 			<nav className="head-nav">
-				<img src="../croissant.png"/>
+			<div>
+					<ul className="navBar clearfix">
+						<li><button className="navButton">Browse Recipes</button>
+							<ul className="sub-menu">
+								<li className="navButton"><button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button></li>
+									<li className="navButton"><button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button></li>
+									<li className="navButton"><button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button></li>
+								<li className="navButton"><button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button></li>
+							</ul>
+						</li>
+					</ul>
+					</div>
+				
+					
+
 			{
 			(() => {
 				if(this.state.loggedin){
 					return(
+						<div className="details">
+					
+					<img className="croissant" src="../croissant.png"/>
+					
 					<span>
-					<a href="#" className="submitRecipe" onClick={this.showSidebar}>Submit a Recipe</a>
+					<a href="#" className="submitRecipe" onClick={this.showSidebar}>Submit Recipe</a>
 					<a href="#" className="signOut" onClick={this.logOut}>Logout</a>
+					
 					</span>
+					</div>
 					)
 				}
 				else{
 					return(
+						<div>
 						<span>
-							<a href="" className="signIn" onClick={this.showCreate}>Create Account</a>
+							<img src="../croissant.png"/>
+							</span>
+						<span>
+							<a href="" className="signIn" onClick={this.showCreate}>Join </a>
 						<a className="signIn" href="#" onClick={this.showLogin}>Login</a>
+
 						</span>
+						</div>
 					)
 				}
 			})()
@@ -292,14 +318,13 @@ closeRecipes(e){
 		<form onSubmit={this.addRecipe}>
 
 			<h3>Add New Recipe 🍽</h3>
-<img className="squiggle" src="../mustrad-stroke.png" />
-		<div className="close-btn" onClick={this.showSidebar}>
-			<i className="fa fa-times"></i>
-		</div>
+<div className="close-btn" onClick={this.showSidebar}>
+<i className="fa fa-times"></i>
+</div>
 			<label htmlFor="recipe-title">Name It✨:</label>
 			<input type="text" name="recipe-title" ref={ref => this.recipeTitle = ref}/>
 			<label htmlFor="recipe-text">What's in it?✨:</label>
-			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
+			
 			<textarea name="recipe-text" ref={ref => this.recipeText = ref}></textarea>
 			<label htmlFor="recipe-ingredients">Recipe description✨:</label>
 			<img src={this.state.Uploadphoto}/>
@@ -307,7 +332,10 @@ closeRecipes(e){
 			<textarea name="recipe-text" ref={ref => this.recipeIngredients = ref}></textarea>
 			<input type="file" accept="image/*" onChange={this.uploadPhoto}/>
 			<img src={this.state.photo}/>
+			<div class="submitBtn">
 			<input className="addRecipe" type="submit" value="Add Recipe"/>
+			<img className="squiggle" src="../mustrad-stroke.png" />
+			</div>
 			</form>
 	</aside>
 	<div className="loginModal modal" ref={ref => this.loginModal = ref}>
@@ -332,19 +360,11 @@ closeRecipes(e){
 	<div className="wrapper">
 			<header> 
 				<h1>the breakfast club</h1>
+
 					<img className="squiggle" src="../mustrad-stroke.png" />
+
 			</header>
-					<ul className="navBar clearfix">
-						<li><button className="navButton">I'm here for the...</button>
-							<ul className="sub-menu">
-								<li className="navButton"><button onClick={() => this.getRecipes("energy")}>{this.state.mood[0]} </button></li>
-									<li className="navButton"><button onClick={() => this.getRecipes("cleanse")}>{this.state.mood[1]}</button></li>
-									<li className="navButton"><button onClick={() => this.getRecipes("wildCard")}>{this.state.mood[2]}</button></li>
-								<li className="navButton"><button onClick={() => this.getRecipes("starving")}>{this.state.mood[3]}</button></li>
-							</ul>
-						</li>
-					</ul>
-				</div>
+						</div>
 <div className="menu_items">
 	<div className="closeRecipe" ref={ref => this.closeRecipes = ref}>
 	</div>
@@ -353,8 +373,8 @@ closeRecipes(e){
 					return (
 					
 		<div className="recipe-container">
-			<img src={recipe.recipe.images[0].hostedLargeUrl} />
-					<div className="recipe-name">{recipe.recipeName}</div>
+			<img className="imgrecipe" src={recipe.recipe.images[0].hostedLargeUrl} />
+					<div className="recipe-name"><h3>{recipe.recipe.name}</h3></div>
 					<div className="recipe-links"> 
 						<a className="btn_recipe" href="#open-modal">Ingredients</a> </div>
 							<div class="socialMedia">
@@ -386,7 +406,21 @@ closeRecipes(e){
 	</div>
 
 </div>
-
+<footer>
+<div className="footer-wrapper">
+<ul className="footer-order">
+		<li className="footerli">thank you <a href="http://yummly.com">Yummly</a> for access to your API.</li>
+		<li className="footerli"><a href="mailto:chiara.zielinsky@gmail.com"><i className="fa fa-envelope"></i>email me</a></li>
+		<li className="footerli"><a href="https://www.instagram.com/cisforChiara/"><i className="fa fa-instagram"></i>follow me</a></li>
+		<li className="footerli"><a href="https://twitter.com/chiaracodes"><i className="fa fa-twitter"></i>tweet me</a>
+		</li>
+		
+	
+		<li className="footerli"><p>generated by <a href="http://chiaracodes.com">Chiara Zielinsky</a></p></li>
+		
+			</ul>
+		</div>
+</footer>
 </main>
 
 

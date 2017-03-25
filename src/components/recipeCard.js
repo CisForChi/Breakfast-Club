@@ -51,16 +51,20 @@ render() {
 			)
 	}
 return (
-	
+	<main>
 <div className="recipeCard">
+
 			   <i className="fa fa-edit" onClick={() => this.setState({editing:true})}></i>
-	
-			     <i className="fa fa-times-circle" onClick={() => this.props.removeRecipe(this.props.recipe.recipeId)}></i>
+			   <i className="fa fa-times-circle" onClick={() => this.props.removeRecipe(this.props.recipe.recipeId)}></i>
 			   {editingTemp}
 			  
+	<h2>{this.props.recipe.title}</h2>
+	<p>{this.props.recipe.ingredients}</p>
+
+			     			  
 			  
 			</div>
-
+</main>
 			
 
 )
